@@ -22,7 +22,7 @@ My addition to the project shows the merchant's coupons and their information.
 - You'll see in the terminal that the project has opened at "http://localhost:5173/"
 
 ### Preview of App:
-(Provide ONE gif or screenshot of your application - choose the "coolest" piece of functionality to show off. gifs preferred!)
+![Presentation Demo](Mod2-Little-Shop-Demo.gif)
 
 ### Context:
 Approx 1 week to work on this project. When viewing the coupons for a merchant, you can see the coupons formatted the same at merchant view. 
