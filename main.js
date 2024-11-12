@@ -16,6 +16,12 @@ const merchantForm = document.querySelector("#new-merchant-form")
 const newMerchantName = document.querySelector("#new-merchant-name")
 const submitMerchantButton = document.querySelector("#submit-merchant")
 
+//Create "Back to Merchants" button
+const backToMerchantsButton = document.createElement("button")
+backToMerchantsButton.id = "back-to-merchants"
+backToMerchantsButton.classList.add("back-to-merchants")
+backToMerchantsButton.innerText = "Back to Merchants"
+
 // Event Listeners
 merchantsView.addEventListener('click', (event) => {
   handleMerchantClicks(event)
@@ -32,6 +38,8 @@ addNewButton.addEventListener('click', () => {
 submitMerchantButton.addEventListener('click', (event) => {
   submitMerchant(event)
 })
+
+backToMerchantsButton.addEventListener('click', showMerchantsView)
 
 //Global variables
 let merchants;
@@ -143,7 +151,7 @@ function showMerchantsView() {
   addRemoveActiveNav(merchantsNavButton, itemsNavButton)
   addNewButton.dataset.state = 'merchant'
   show([merchantsView, addNewButton])
-  hide([itemsView])
+  hide([itemsView, couponsView])
   displayMerchants(merchants)
 }
 
@@ -237,19 +245,47 @@ function getMerchantCoupons(event) {
   console.log("Merchant ID:", merchantId)
 
   fetchData(`merchants/${merchantId}`)
-  .then(couponData => {
-    console.log("Coupon data from fetch:", couponData)
-    displayMerchantCoupons(couponData);
-  })
+    .then(merchantData => {
+      const merchantName = merchantData.data.attributes.name
+      
+      console.log("Merchant Name:", merchantName)
+
+      fetchData(`merchants/${merchantId}/coupons`)
+        .then(couponData => {
+          displayMerchantCoupons(couponData.data, merchantId, merchantName)
+        })
+        .catch(error => {
+          console.error("Error fetching coupons:", error)
+          showStatus("Failed to load coupons", false)
+        });
+    })
+    .catch(error => {
+      console.error("Error fetching merchant:", error)
+      showStatus("Failed to load merchant details", false)
+    })
 }
 
-function displayMerchantCoupons(coupons) {
+function displayMerchantCoupons(coupons, merchantId, merchantName) {
+  showingText.innerText = `All Coupons for Merchant #${merchantId}`
+
   show([couponsView])
-  hide([merchantsView, itemsView])
+  hide([merchantsView, itemsView, addNewButton])
 
   couponsView.innerHTML = `
-    <p>Coupon data will go here.</p>
-  `
+    <h3>Coupons for Merchant: ${merchantName}</h3>
+    <div class="coupon-list">
+      ${coupons.map(coupon => `
+        <article class="coupon" id="coupon-${coupon.id}">
+          <h4>${coupon.attributes.name}</h4>
+          <p>Code: ${coupon.attributes.code}</p>
+          <p>Discount: ${coupon.attributes.discount_type === 'percent' ? coupon.attributes.discount_value + '%' : '$' + coupon.attributes.discount_value}</p>
+          <p>Status: ${coupon.attributes.active ? 'Active' : 'Inactive'}</p>
+        </article>
+      `).join('')}
+    </div>
+  `;
+
+  couponsView.appendChild(backToMerchantsButton);
 }
 
 //Helper Functions
